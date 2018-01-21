@@ -9,59 +9,82 @@
 import UIKit
 
 class ViewController: UIViewController {
+    var buttonsEnabled = false
+    var players = [Player(name: "Player 1"), Player(name: "Player 2")]
+    var currPlayer: Int = 0
     
-    //PASSING
-    var pass0 = 0
-    var pass1 = 0
-    var pass2 = 0
-    var pass3 = 0
+    @IBAction func Player1(_ sender: UIButton) {
+        /*
+        if(!buttonsEnabled) {
+            buttonsEnabled = true
+            enableButtons()
+        } */
+        currPlayer = 0
+    }
     
+    @IBAction func Player2(_ sender: UIButton) {
+        /*
+        if(!buttonsEnabled) {
+            buttonsEnabled = true
+            enableButtons()
+        } */
+        currPlayer = 1
+    }
+    
+    // PASSING
     @IBAction func pass_0(_ sender: UIButton) {
-        pass0 += 1
+        players[currPlayer].pass0 += 1
     }
     @IBAction func pass_1(_ sender: UIButton) {
-        pass1 += 1
+        players[currPlayer].pass1 += 1
     }
     @IBAction func pass_2(_ sender: UIButton) {
-        pass2 += 1
+        players[currPlayer].pass2 += 1
     }
     @IBAction func pass_3(_ sender: UIButton) {
-        pass3 += 1
+        players[currPlayer].pass3 += 1
     }
     
-    //HITTING
-    var kill = 0
-    var hittingE = 0
-    var hittingA = 0
+    /* doesn't work on the button (function) only on variables
+    func enableButtons() {
+        pass_0.isEnabled = true
+        pass_1.isEnabled = true
+        pass_2.isEnabled = true
+        pass_3.isEnabled = true
+    }
     
+    func disableButtons() {
+        pass_0.isEnabled = false
+        pass_1.isEnabled = false
+        pass_2.isEnabled = false
+        pass_3.isEnabled = false
+    }
+ */
     
+    // HITTING
     @IBAction func add_kill(_ sender: UIButton) {
-        kill += 1
+        players[currPlayer].kill += 1
     }
     
     @IBAction func hitting_E(_ sender: UIButton) {
-        hittingE += 1
+        players[currPlayer].hittingE += 1
     }
     
     @IBAction func hitting_A(_ sender: UIButton) {
-        hittingA += 1
+        players[currPlayer].hittingA += 1
     }
     
-    //SERVING
-    var ace = 0
-    var servingE = 0
-    var servingA = 0
-    
+    // SERVING
     @IBAction func add_ace(_ sender: UIButton) {
-        ace += 1
+        players[currPlayer].ace += 1
     }
     
     @IBAction func serving_E(_ sender: UIButton) {
-        servingE += 1
+        players[currPlayer].servingE += 1
     }
     
     @IBAction func serving_A(_ sender: UIButton) {
-        servingA += 1
+        players[currPlayer].servingA += 1
     }
     
     //VIEW FUNCTION
@@ -74,42 +97,74 @@ class ViewController: UIViewController {
         performSegue(withIdentifier: "secondVC", sender: self)
     }
     
-    //SEGUE FOR MEAN VALUE
+    //SEGUE FOR PASSING to 2ndview
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destination = segue.destination as? SecondViewController {
+            destination.play1name = players[0].name
+            destination.play2name = players[1].name
             
-            //passing stats
-            let sum1 = Double(0 + (pass1) + (2*pass2) + (3*pass3))
-            let sum2 = Double(pass0+pass1+pass2+pass3)
-            var mean_pass_doub : Double
+            //prep segue
+            var means = [String]()
             
-            if sum2 != 0
-            {mean_pass_doub = (sum1/sum2)}
-            else
-            {mean_pass_doub = 0.00}
             
-            let mean_pass_string:String = String(format:"%.2f", mean_pass_doub)
-            destination.mean = mean_pass_string
+            for x in 0...1 {
+                let curr = players[x]
+                
+                // passing
+                let sum1 = Double(0 + (curr.pass1) + (2 * curr.pass2) + (3 * curr.pass3))
+                let sum2 = Double(curr.pass0 + curr.pass1 + curr.pass2 + curr.pass3)
+                var mean_pass_doub : Double
+                
+                if sum2 != 0 {mean_pass_doub = (sum1/sum2)}
+                else {mean_pass_doub = 0.00}
+                means.append(String(format:"%.2f", mean_pass_doub))
+            }
             
-            var hittingEff : Double
-            if (kill + hittingE + hittingA != 0)
-            {hittingEff = Double((kill - hittingE)/(kill + hittingE + hittingA))}
-            else
-            {hittingEff = 0.00}
+            destination.mean = means
             
-            //prep segue for hitting stats
-            destination.kill_dest = Double(kill)
-            destination.hittingE_dest = Double(hittingE)
-            destination.hittingA_dest = Double(hittingA)
-            destination.hittingEff_dest = hittingEff
-            destination.ace_dest = Double(ace)
-            destination.servingE_dest = Double(servingE)
-            destination.servingA_dest = Double(servingA)
             
-            //prep segue for serving stats
+        }
+    
+    
+    //override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        else if let destination2 = segue.destination as? ThirdViewController {
+            var hittingEfficiencies = [Double]()
+            var kill_dest = [Double]()
+            var hittingE_dest = [Double]()
+            var hittingA_dest = [Double]()
+            var ace_dest = [Double]()
+            var servingE_dest = [Double]()
+            var servingA_dest = [Double]()
+            
+            for x in 0...1 {
+                let curr = players[x]
+                
+                // hitting
+                var hittingEff = 0.00
+                if (curr.kill + curr.hittingE + curr.hittingA != 0)
+                {hittingEff = Double((curr.kill - curr.hittingE)/(curr.kill + curr.hittingE + curr.hittingA))}
+                
+                hittingEfficiencies.append(hittingEff)
+                kill_dest.append(curr.kill)
+                hittingE_dest.append(curr.hittingE)
+                hittingA_dest.append(curr.hittingA)
+                
+                // serving
+                ace_dest.append(curr.ace)
+                servingE_dest.append(curr.servingE)
+                servingA_dest.append(curr.servingA)
+            }
+            
+            destination2.hittingEfficiencies = hittingEfficiencies
+            destination2.kill_dest = kill_dest
+            destination2.hittingE_dest = hittingE_dest
+            destination2.hittingA_dest = hittingA_dest
+            
+            destination2.ace_dest = ace_dest
+            destination2.servingE_dest = servingE_dest
+            destination2.servingA_dest = servingA_dest
         }
     }
-    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
